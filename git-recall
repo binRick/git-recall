@@ -63,13 +63,6 @@ function clear_screen() {
     tput cuu1
 }
 
-# Are we in a git repo?
-if [[ ! -d ".git" ]] && ! git rev-parse --git-dir &>/dev/null; then
-    echo "abort: not a git repository." 1>&2
-    exit 1
-fi
-
-# Parse options
 while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do
     case $1 in
 	-v | --version )
@@ -107,6 +100,17 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do
 done
 if [[ "$1" == "--" ]]; then shift; fi
 
+
+# Are we in a git repo?
+cFile="${SEARCH_PATH}/.git/"
+echo "cFile = $cFile"
+if [[ ! -d "${cFile}" ]] && ! git rev-parse --git-dir &>/dev/null; then
+    echo "abort: not a git repository." 1>&2
+    exit 1
+fi
+
+# Parse options
+
 # Enable colors if supported by terminal.
 if [[ -t 1 ]] && [[ -n "$TERM" ]] && which tput &>/dev/null && tput colors &>/dev/null; then
     ncolors=$(tput colors)
@@ -138,9 +142,13 @@ fi
 GIT_FORMAT="%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"
 
 # Log command.
-GIT_LOG="git log --pretty=format:'${GIT_FORMAT}'  
+oDir=$(pwd);
+GIT_LOG="cd ${SEARCH_PATH} && \
+	   git log --pretty=format:'${GIT_FORMAT}'  
            --author \"$AUTHOR\"
-           --since \"$SINCE\" --abbrev-commit --no-merges $BRANCH $SEARCH_PATH"
+           --since \"$SINCE\" --abbrev-commit --no-merges $BRANCH $SEARCH_PATH ; \
+		cd ${oDir}"
+
 
 # Change temporary the IFS to store GIT_LOG's output into an array.
 IFS=$'\n'
@@ -197,7 +205,8 @@ fi
 function get_diff() {
     ELT="$(echo "${COMMITS_UNCOL[$CP-1]}")"
     DIFF_TIP=${ELT:0:7}
-    DIFF_CMD="git show $DIFF_TIP --color=always $SEARCH_PATH"
+    oDir=$(pwd);
+    DIFF_CMD="cd $SEARCH_PATH && git show $DIFF_TIP --color=always $SEARCH_PATH ; cd $oDir"
     DIFF=$(eval ${DIFF_CMD} 2>/dev/null)
     tmp_diff="$(echo "$DIFF" | $SED_CMD)"
     off=$(echo "$tmp_diff" | grep -c ".\{$CN\}") # Number of lines in the diff that are longer than terminal width.
