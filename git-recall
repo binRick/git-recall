@@ -103,7 +103,6 @@ if [[ "$1" == "--" ]]; then shift; fi
 
 # Are we in a git repo?
 cFile="${SEARCH_PATH}/.git/"
-echo "cFile = $cFile"
 if [[ ! -d "${cFile}" ]] && ! git rev-parse --git-dir &>/dev/null; then
     echo "abort: not a git repository." 1>&2
     exit 1
