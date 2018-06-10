@@ -101,6 +101,8 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do
 done
 if [[ "$1" == "--" ]]; then shift; fi
 
+[[ "$SEARCH_PATH" == "" ]] && export SEARCH_PATH=${PWD}
+
 # Are we in a git repo?
 cFile="${SEARCH_PATH}/.git/"
 if [[ ! -d "${cFile}" ]] && ! git rev-parse --git-dir &>/dev/null; then
@@ -140,7 +142,7 @@ fi
 GIT_FORMAT="%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"
 
 # Log command.
-oDir=$(pwd);
+oDir=${PWD}
 GIT_LOG="cd ${SEARCH_PATH} && \
 	   git log --pretty=format:'${GIT_FORMAT}'  
            --author \"$AUTHOR\"
@@ -203,7 +205,7 @@ fi
 function get_diff() {
     ELT="$(echo "${COMMITS_UNCOL[$CP-1]}")"
     DIFF_TIP=${ELT:0:7}
-    oDir=$(pwd);
+    oDir=${PWD}
     DIFF_CMD="cd $SEARCH_PATH && git show $DIFF_TIP --color=always $SEARCH_PATH ; cd $oDir"
     DIFF=$(eval ${DIFF_CMD} 2>/dev/null)
     tmp_diff="$(echo "$DIFF" | $SED_CMD)"
