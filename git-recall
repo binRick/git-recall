@@ -19,12 +19,12 @@ EOF
 
 # Global variables
 orig_stty=$(stty -g)   # Store original terminal settings
-AUTHOR=""
-FETCH=false
+AUTHOR="all"
+FETCH=true
 GIT_FORMAT=""
 GIT_LOG=""
 COMMITS=""
-SINCE="1 days ago"     # show logs for last day by default
+SINCE="7 days ago"     # show logs for last 7 days by default
 COMMITS_UNCOL=()       # commits without colors
 SED_CMD=""             # Sed command to use according OS.
 LESSKEY=false
@@ -63,6 +63,7 @@ function clear_screen() {
     tput cuu1
 }
 
+# Parse options
 while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do
     case $1 in
 	-v | --version )
@@ -100,7 +101,6 @@ while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do
 done
 if [[ "$1" == "--" ]]; then shift; fi
 
-
 # Are we in a git repo?
 cFile="${SEARCH_PATH}/.git/"
 if [[ ! -d "${cFile}" ]] && ! git rev-parse --git-dir &>/dev/null; then
@@ -108,7 +108,6 @@ if [[ ! -d "${cFile}" ]] && ! git rev-parse --git-dir &>/dev/null; then
     exit 1
 fi
 
-# Parse options
 
 # Enable colors if supported by terminal.
 if [[ -t 1 ]] && [[ -n "$TERM" ]] && which tput &>/dev/null && tput colors &>/dev/null; then
